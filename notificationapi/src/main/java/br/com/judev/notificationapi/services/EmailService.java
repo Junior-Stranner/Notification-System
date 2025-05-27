@@ -1,6 +1,7 @@
 package br.com.judev.notificationapi.services;
 
 import jakarta.mail.internet.MimeMessage;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
@@ -20,7 +21,11 @@ public class EmailService {
         this.mailSender = mailSender;
     }
 
-    void sendMail() {
+    @Value("${spring.mail.username}")
+    private String fromEmail;
+
+
+    public void sendMail() {
         if (lock.tryLock()) {
             try {
                 Instant now = Instant.now();
@@ -42,8 +47,8 @@ public class EmailService {
                     </html>
                     """.formatted(now);
 
-                helper.setFrom("SEU_EMAIL@gmail.com");
-                helper.setTo("DESTINO@gmail.com");
+                helper.setFrom(fromEmail);
+                helper.setTo(fromEmail);
                 helper.setSubject("Você tem uma nova visita!");
                 helper.setText(content, true);
 
