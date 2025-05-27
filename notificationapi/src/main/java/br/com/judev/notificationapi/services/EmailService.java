@@ -1,69 +1,71 @@
 package br.com.judev.notificationapi.services;
 
 import jakarta.mail.internet.MimeMessage;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
-
 import java.time.Duration;
 import java.time.Instant;
-import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.atomic.AtomicReference;
 
 @Service
 public class EmailService {
 
-    private final JavaMailSender mailSender;
-    private Instant lastEmailTime = Instant.MIN;
-    private final ReentrantLock lock = new ReentrantLock();
+    private static final Logger logger = LoggerFactory.getLogger(EmailService.class);
 
-    public EmailService(JavaMailSender mailSender) {
+    private final JavaMailSender mailSender;
+    private final String fromEmail;
+    private final AtomicReference<Instant> lastEmailTime = new AtomicReference<>(Instant.MIN);
+
+    public EmailService(JavaMailSender mailSender,
+                        @Value("${spring.mail.username}") String fromEmail) {
         this.mailSender = mailSender;
+        this.fromEmail = fromEmail;
     }
 
-    @Value("${spring.mail.username}")
-    private String fromEmail;
+    public boolean sendMail() {
+        Instant now = Instant.now();
+        Instant lastTime = lastEmailTime.get();
 
+        if (Duration.between(lastTime, now).getSeconds() < 10) {
+            logger.warn("Email não enviado. Último envio foi há menos de 10 segundos.");
+            return false;
+        }
 
-    public void sendMail() {
-        if (lock.tryLock()) {
-            try {
-                Instant now = Instant.now();
-                if (Duration.between(lastEmailTime, now).getSeconds() < 10) {
-                    System.out.println("Email não enviado (menos de 10s desde o último envio)");
-                    return;
-                }
-                lastEmailTime = now;
+        if (!lastEmailTime.compareAndSet(lastTime, now)) {
+            logger.warn("Outro envio de email está em andamento.");
+            return false;
+        }
 
-                MimeMessage message = mailSender.createMimeMessage();
-                MimeMessageHelper helper = new MimeMessageHelper(message);
-                String content = """
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, "UTF-8");
+
+            String content = """
                     <html>
                       <body>
-                        <p>MENSAGEM DO CORPO DO EMAIL</p>
+                        <p>Você recebeu uma nova visita!</p>
                         <p>Momento da visita: %s</p>
-                        <img src="">
+                        <img src="https://yourdomain.com/api/track/image" width="1" height="1" style="display:none;" alt="">
                       </body>
                     </html>
                     """.formatted(now);
 
-                helper.setFrom(fromEmail);
-                helper.setTo(fromEmail);
-                helper.setSubject("Você tem uma nova visita!");
-                helper.setText(content, true);
+            helper.setFrom(fromEmail);
+            helper.setTo(fromEmail);
+            helper.setSubject("Você tem uma nova visita!");
+            helper.setText(content, true);
 
-                mailSender.send(message);
+            mailSender.send(message);
 
-                System.out.println("Email enviado em " + now);
-            } catch (Exception e) {
-                System.out.println("Erro ao enviar email: " + e.getMessage());
-            } finally {
-                lock.unlock();
-            }
-        } else {
-            System.out.println("Outro envio está em andamento.");
+            logger.info("Email enviado com sucesso em {}", now);
+            return true;
+        } catch (Exception e) {
+            logger.error("Erro ao enviar email", e);
+            return false;
         }
     }
-
 }
-

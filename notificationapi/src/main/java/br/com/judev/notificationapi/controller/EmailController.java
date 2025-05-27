@@ -18,8 +18,15 @@ public class EmailController {
 
     @PostMapping("/track-visit")
     public ResponseEntity<String> trackVisit() {
-        emailService.sendMail();
-        return ResponseEntity.ok("Visit tracked");
+        boolean sent = emailService.sendMail();
+        if (sent) {
+            return ResponseEntity
+                    .ok("Visita registrada e e‑mail enviado com sucesso!");
+        } else {
+            return ResponseEntity
+                    .status(429)
+                    .body("E‑mail já enviado recentemente. Aguarde alguns segundos.");
+        }
     }
 }
 
