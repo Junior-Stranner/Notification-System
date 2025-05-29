@@ -60,16 +60,29 @@ public class EmailService {
         MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
         String content = """
-            <html>
-              <body style="font-family: Arial, sans-serif; text-align: center; background-color: #f9f9f9; padding: 20px;">
-                <h2 style="color: #333;">🎉 Você recebeu uma <b>nova visita</b>!</h2>
-                <p style="color: #555;">Momento da visita:</p>
-                <p style="color: #000;"><b>%s</b></p>
-                <img src="cid:jonahGif" width="300" alt="Happy Jonah Hill" style="border-radius: 10px;"/>
-                <p style="margin-top: 20px; color: #555;">Obrigado por visitar meu portfólio!</p>
-              </body>
-            </html>
-            """.formatted(dataFormatada);
+<html>
+<body style="font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 40px; margin: 0;">
+<div style="max-width: 600px; background-color: white; margin: auto; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); padding: 30px;">
+  
+  <h2 style="color: #333; text-align: center;">🎉 Você recebeu uma <span style="color: #007bff;">nova visita</span>!</h2>
+  <p style="color: #555; text-align: center; font-size: 16px;">
+    Alguém acabou de acessar seu portfólio! 🎯
+  </p>
+  <p style="text-align: center; color: #000; font-size: 18px; margin-top: 20px;">
+    <strong>📅 Momento da visita:</strong><br>
+    <span style="color: #007bff;">%s</span>
+  </p>
+  <div style="text-align: center; margin: 30px 0;">
+    <img src="cid:jonahGif" width="320" alt="Happy Jonah Hill" style="border-radius: 12px;"/>
+  </div>
+  <p style="text-align: center; color: #aaa; font-size: 12px; margin-top: 30px;">
+    Esta é uma notificação automática do seu portfólio.
+  </p>
+</div>
+</body>
+</html>
+""".formatted(dataFormatada);
+
 
         helper.setFrom(fromEmail);
         helper.setTo(fromEmail);
