@@ -28,7 +28,7 @@ public class EmailController {
         if (sent) {
             return ResponseEntity.ok("Email enviado com sucesso.");
         } else {
-            return ResponseEntity.status(500).body("Falha ao enviar email.");
+            return ResponseEntity.status(429).body("Aguarde antes de enviar novamente.");
         }
     }
 }
