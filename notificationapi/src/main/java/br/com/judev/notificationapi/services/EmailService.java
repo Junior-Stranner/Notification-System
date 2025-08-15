@@ -1,12 +1,15 @@
 package br.com.judev.notificationapi.services;
 
 import br.com.judev.notificationapi.dto.EmailNotificationResult;
+import br.com.judev.notificationapi.exceptions.handlerMailException;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.mail.MailAuthenticationException;
+import org.springframework.mail.MailException;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
@@ -19,6 +22,7 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicReference;
+import org.springframework.mail.MailException;
 
 @Service
 public class EmailService {
@@ -39,7 +43,7 @@ public class EmailService {
     }
 
 
-    public EmailNotificationResult sendMail() {
+    public EmailNotificationResult sendMail() throws MailException {
         Instant now = Instant.now();
         Duration sinceLast = Duration.between(lastSent.get(), now);
 
@@ -66,12 +70,18 @@ public class EmailService {
             helper.addInline("jonahGif", gifFile);
             mailSender.send(message);
             lastSent.set(now);
-
             logger.info("Email enviado com sucesso em {}", dataFormatada);
             return new EmailNotificationResult(true, "Email enviado com sucesso!");
-        } catch (Exception e) {
-            logger.error("Erro ao enviar email", e);
-            return new EmailNotificationResult(false, "Erro ao enviar email: " + e.getMessage());
+
+        } catch (MailAuthenticationException ex) {
+            logger.error("Falha de autenticação no serviço de email", ex);
+            throw new handlerMailException("Falha de autenticação no servidor SMTP", ex);
+        } catch (MessagingException ex) {
+            logger.error("Erro ao construir a mensagem de email", ex);
+            throw new handlerMailException("Erro na construção do email", ex);
+        } catch (Exception ex) {
+            logger.error("Erro inesperado ao enviar email", ex);
+            throw new handlerMailException("Erro inesperado no serviço de email", ex);
         }
     }
 

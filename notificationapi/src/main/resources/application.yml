@@ -1,0 +1,25 @@
+spring:
+  application:
+    name: notificationapi
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
+    properties:
+      mail:
+        smtp:
+          connectiontimeout: 5000
+          timeout: 5000
+          writetimeout: 5000
+          auth: true
+          starttls:
+            enable: true
+            required: true
+  main:
+    allow-bean-definition-overriding: true
+
+notification:
+  throttle-seconds: 60
+
+
