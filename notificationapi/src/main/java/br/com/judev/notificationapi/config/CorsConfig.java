@@ -12,14 +12,9 @@ public class CorsConfig {
         return new WebMvcConfigurer() {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
-                registry.addMapping("/**")
-                        .allowedOrigins(
-                                "http://localhost:5501",
-                                "http://127.0.0.1:5501",
-                                "https://junior-stranner.netlify.app"
-                        )
-                        .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
-                        .allowedHeaders("*");
+                registry.addMapping("/api/**")
+                        .allowedOrigins("https://seu-portfolio.netlify.app")
+                        .allowedMethods("POST");
             }
         };
     }
