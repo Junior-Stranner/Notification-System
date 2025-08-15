@@ -38,6 +38,7 @@ public class EmailService {
         this.fromEmail = fromEmail;
     }
 
+
     public EmailNotificationResult sendMail() {
         Instant now = Instant.now();
         Duration sinceLast = Duration.between(lastSent.get(), now);
