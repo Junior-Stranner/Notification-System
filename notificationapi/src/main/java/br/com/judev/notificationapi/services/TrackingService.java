@@ -2,6 +2,7 @@ package br.com.judev.notificationapi.services;
 
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -12,13 +13,14 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 @Service
 public class TrackingService {
     // Mapa para armazenar contagem de acessos em memória
     // Chave: visitorId-IP | Valor: quantidade de acessos
-    private final Map<String,Integer> accessCount = new HashMap<>();
+    private final ConcurrentHashMap<String,Integer> accessCount = new ConcurrentHashMap <>();
 
 
     /**
@@ -27,24 +29,25 @@ public class TrackingService {
      * @param response Objeto HttpServletResponse para adicionar novos cookies
      * @return String no formato "visitorId-IP"
      */
-    public String identifyUser(HttpServletRequest request, HttpServletRequest response) {
+    public String identifyVisitor(HttpServletRequest request, HttpServletResponse response) {
         // Verifica se existem cookies na requisição
         Cookie[] cookies = request.getCookies() != null ? request.getCookies() : new Cookie[0];
 
         // Verifica cookie existente
-     String visitorId = Arrays.stream(request.getCookies())
-             .filter(c -> c.getName().equals("visitorId"))
-             .findFirst()
-             .map(Cookie::getValue)
-             .orElse(null);
+        String visitorId = Arrays.stream(cookies)
+                .filter(c -> "visitorId".equals(c.getName()))
+                .findFirst()
+                .map(Cookie::getValue)
+                .orElse(null);
 
         // Se não encontrou o cookie, cria um novo
         if (visitorId == null) {
             visitorId = UUID.randomUUID().toString();
             Cookie cookie = new Cookie("visitorId", visitorId);
-            cookie.setMaxAge(30 * 24 * 60 * 60); // Expira em 30 dias
+            cookie.setMaxAge(3600); // 1 hora
             cookie.setHttpOnly(true); // Protege contra acesso via JavaScript
             cookie.setPath("/"); // Disponível para todas as rotas
+            cookie.setSecure(false); // Apenas para desenvolvimento local
 
             // Adiciona o cookie na resposta
             response.addCookie(cookie); // Corrige o erro - estava com HttpServletRequest
