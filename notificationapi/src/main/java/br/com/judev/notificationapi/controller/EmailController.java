@@ -2,6 +2,7 @@ package br.com.judev.notificationapi.controller;
 
 import br.com.judev.notificationapi.dto.EmailNotificationResult;
 import br.com.judev.notificationapi.services.EmailService;
+import org.apache.coyote.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
@@ -21,8 +22,13 @@ public class EmailController {
     public EmailController(EmailService emailService) {
         this.emailService = emailService;
     }
+        @PostMapping("/notify")
+        public ResponseEntity<EmailNotificationResult> notifyAcess(){
+            logger.info("Enviando notificação padrão (visita)");
+            return ResponseEntity.ok(emailService.sendMail()); // Usa o método simplificado
+    }
 
-    @PostMapping("/notify")
+    @PostMapping("/custom-notify")
     public ResponseEntity<EmailNotificationResult> notifyAccess() {
         logger.info("Requisição recebida para enviar notificação síncrona");
         EmailNotificationResult result = emailService.sendMail();
@@ -35,7 +41,9 @@ public class EmailController {
     @PostMapping("/async-notify")
     public CompletableFuture<ResponseEntity<EmailNotificationResult>> notifyAccessAsync() {
         logger.info("Requisição recebida para enviar notificação assíncrona");
-        return emailService.sendMailAsync()
+        return emailService.sendNotificationAsync(
+                "🚀 Nova visita ao portfólio",
+                        "Alguém acessou seu portfólio!")
                 .thenApply(result -> {
                     if (result.isSuccess()) {
                         logger.info("Email enviado com sucesso via chamada assíncrona");

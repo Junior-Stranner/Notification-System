@@ -27,16 +27,29 @@ public class AccessController {
      */
     @GetMapping
     public ResponseEntity<AccessResponse> registerAccess(HttpServletRequest request, HttpServletResponse response){
-        // 1. Identifica o visitante (cookie + IP)
-        String visitorKey = trackingService.identifyVisitor(request, response);
 
-        // 2. Registra o acesso (contagem em memória/arquivo)
+        String visitorKey = trackingService.identifyVisitor(request, response);
         int accessCount = trackingService.registerAccess(visitorKey);
 
-        // 3. Envia e-mail de notificação
+        // Mensagem mais rica com HTML
+        String emailBody = """
+            <strong>Detalhes do acesso:</strong>
+            <ul>
+                <li>ID: %s</li>
+                <li>IP: %s</li>
+                <li>Total de acessos: %d</li>
+                <li>User-Agent: %s</li>
+            </ul>
+            """.formatted(
+                visitorKey.split("\\|")[0],
+                request.getRemoteAddr(),
+                accessCount,
+                request.getHeader("User-Agent")
+        );
+
         emailService.sendNotification(
-                "Novo acesso detectado",
-                "Visitante: " + visitorKey + "\nTotal de acessos: " + accessCount
+                "👤 Novo acesso ao portfólio",
+                emailBody
         );
         return ResponseEntity.ok(
                 new AccessResponse(
