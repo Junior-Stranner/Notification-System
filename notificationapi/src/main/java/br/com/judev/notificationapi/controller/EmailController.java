@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.concurrent.CompletableFuture;
@@ -23,20 +24,22 @@ public class EmailController {
         this.emailService = emailService;
     }
         @PostMapping("/notify")
-        public ResponseEntity<EmailNotificationResult> notifyAcess(){
-            logger.info("Enviando notificação padrão (visita)");
-            return ResponseEntity.ok(emailService.sendMail()); // Usa o método simplificado
+        public ResponseEntity<EmailNotificationResult> notifyAcess(@RequestParam (required = false) String customMessage){
+            String message = customMessage != null ? customMessage : "Alguém acessou seu portfólio!";
+
+            try {
+                EmailNotificationResult result = emailService.sendNotification(
+                        "🚀 Nova visita ao portfólio",
+                        message
+                );
+                return createResponse(result);
+            } catch (Exception e) {
+                logger.error("Falha no envio de notificação", e);
+                return ResponseEntity.internalServerError()
+                        .body(new EmailNotificationResult(false, "Erro interno"));
+            }
     }
 
-    @PostMapping("/custom-notify")
-    public ResponseEntity<EmailNotificationResult> notifyAccess() {
-        logger.info("Requisição recebida para enviar notificação síncrona");
-        EmailNotificationResult result = emailService.sendMail();
-
-        return result.isSuccess()
-                ? ResponseEntity.ok(result)
-                : ResponseEntity.status(429).body(result);
-    }
 
     @PostMapping("/async-notify")
     public CompletableFuture<ResponseEntity<EmailNotificationResult>> notifyAccessAsync() {
