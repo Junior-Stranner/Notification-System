@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/access")
+@RequestMapping("/api/v1/access")
 public class AccessController {
     private final TrackingService trackingService;
     private final EmailService emailService;
@@ -31,18 +31,16 @@ public class AccessController {
         String visitorKey = trackingService.identifyVisitor(request, response);
         int accessCount = trackingService.registerAccess(visitorKey);
 
-        // Mensagem mais rica com HTML
+// Mensagem simplificada
         String emailBody = """
-            <strong>Detalhes do acesso:</strong>
-            <ul>
-                <li>ID: %s</li>
-                <li>IP: %s</li>
-                <li>Total de acessos: %d</li>
-                <li>User-Agent: %s</li>
-            </ul>
-            """.formatted(
-                visitorKey.split("\\|")[0],
-                request.getRemoteAddr(),
+    <strong>Detalhes do acesso:</strong>
+    <ul>
+        <li>ID: %s</li>
+        <li>Total de acessos: %d</li>
+        <li>User-Agent: %s</li>
+    </ul>
+    """.formatted(
+                visitorKey,
                 accessCount,
                 request.getHeader("User-Agent")
         );
@@ -53,9 +51,8 @@ public class AccessController {
         );
         return ResponseEntity.ok(
                 new AccessResponse(
-                        visitorKey.split("\\|")[0], // ID do cookie
-                        request.getRemoteAddr(),    // IP
-                        accessCount                 // Contagem
+                        visitorKey,       // apenas o ID do cookie// pode retornar null ou remover o campo IP do DTO
+                        accessCount
                 )
         );
     }

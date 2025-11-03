@@ -12,7 +12,7 @@ public class CorsConfig {
         return new WebMvcConfigurer() {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
-                registry.addMapping("/api/**")
+                registry.addMapping("/api/v1/email")
                         .allowedOrigins("https://seu-portfolio.netlify.app")
                         .allowedMethods("POST");
             }
