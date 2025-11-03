@@ -12,9 +12,13 @@ public class CorsConfig {
         return new WebMvcConfigurer() {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
-                registry.addMapping("/api/v1/email")
+                // Permite CORS para ambos os endpoints
+                registry.addMapping("/api/v1/email/**")
                         .allowedOrigins("https://seu-portfolio.netlify.app")
                         .allowedMethods("POST");
+                registry.addMapping("/api/v1/access")
+                        .allowedOrigins("https://seu-portfolio.netlify.app")
+                        .allowedMethods("GET");
             }
         };
     }
