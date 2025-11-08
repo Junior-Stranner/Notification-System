@@ -14,10 +14,10 @@ public class CorsConfig {
             public void addCorsMappings(CorsRegistry registry) {
                 // Permite CORS para ambos os endpoints
                 registry.addMapping("/api/v1/email/**")
-                        .allowedOrigins("https://seu-portfolio.netlify.app")
+                        .allowedOrigins("https://Heinz.Stranner.JR.netlify.app")
                         .allowedMethods("POST");
                 registry.addMapping("/api/v1/access")
-                        .allowedOrigins("https://seu-portfolio.netlify.app")
+                        .allowedOrigins("https://Heinz.Stranner.JR.netlify.app")
                         .allowedMethods("GET");
             }
         };

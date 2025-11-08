@@ -39,21 +39,9 @@ public class EmailService {
         this.mailSender = mailSender;
         this.fromEmail = fromEmail;
     }
-
-
     /**
      * Envia e-mail de notificação padrão (visita ao portfólio)
      */
-    public EmailNotificationResult sendMail() throws handlerMailException {
-        return sendNotification(
-                "🚀 Você tem uma nova visita!",
-                """
-                        <h2 style="color: #333; text-align: center;">🎉 Você recebeu uma <span style="color: #007bff;">nova visita</span>!</h2>
-                        <p style="color: #555; text-align: center; font-size: 16px;">Alguém acabou de acessar seu portfólio! 🎯</p>
-                        """
-        );
-    }
-
     /**
      * Envia notificação personalizada
      *
@@ -126,12 +114,6 @@ public class EmailService {
             logger.error("Erro inesperado ao enviar email", ex);
             throw new handlerMailException("Erro inesperado no serviço de email", ex);
         }
-    }
-
-
-    @Async
-    public CompletableFuture<EmailNotificationResult> sendMailAsync() {
-        return CompletableFuture.completedFuture(sendMail());
     }
 
     @Async
