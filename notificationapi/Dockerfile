@@ -9,9 +9,6 @@ RUN mvn dependency:go-offline
 # Copia o código fonte
 COPY src ./src
 
-# Compila o projeto e gera o jar
-RUN mvn clean package -DskipTests
-
 # ----- Runtime -----
 FROM eclipse-temurin:21-jre
 WORKDIR /app
