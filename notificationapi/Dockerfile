@@ -1,32 +1,20 @@
-# ----- Build Stage -----
+# ----- Build -----
 FROM maven:3.9.6-eclipse-temurin-21 AS builder
-
-# Diretório de trabalho
 WORKDIR /app
 
-# Copia apenas o pom.xml para baixar dependências (cache eficiente)
-COPY notificationapi/pom.xml .
-
-# Baixa dependências offline para agilizar builds futuros
+# Copia pom.xml e baixa dependências
+COPY pom.xml .
 RUN mvn dependency:go-offline
 
 # Copia o código fonte
-COPY notificationapi/src ./src
+COPY src ./src
 
 # Compila o projeto e gera o jar
 RUN mvn clean package -DskipTests
 
-# ----- Runtime Stage -----
+# ----- Runtime -----
 FROM eclipse-temurin:21-jre
-
-# Diretório de trabalho
 WORKDIR /app
-
-# Copia o jar do build stage
 COPY --from=builder /app/target/*.jar app.jar
-
-# Expõe a porta da aplicação
 EXPOSE 8080
-
-# Comando para rodar a aplicação
-ENTRYPOINT ["java", "-jar", "app.jar"]
+ENTRYPOINT ["java","-jar","app.jar"]
