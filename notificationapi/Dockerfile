@@ -1,15 +1,14 @@
- Use uma imagem base com Java (escolha a versão adequada)
-
-FROM openjdk:17-jdk-slim
-# Defina o diretório de trabalho dentro do container
-
+# ----- Build -----
+FROM maven:3.9.6-eclipse-temurin-21 AS builder
 WORKDIR /app
-# Copie o arquivo JAR construído (certifique-se de ajustar o nome)
+COPY pom.xml .
+RUN mvn dependency:go-offline
+COPY src ./src
+RUN mvn clean package -DskipTests
 
-COPY target/*.jar app.jar
-# Exponha a porta que sua aplicação Spring Boot utiliza (geralmente 8080)
-
+# ----- Runtime -----
+FROM eclipse-temurin:21-jre
+WORKDIR /app
+COPY --from=builder /app/target/*.jar app.jar
 EXPOSE 8080
-# Comando para executar a aplicação
-
-ENTRYPOINT ["java", "-jar", "app.jar"]
+ENTRYPOINT ["java","-jar","app.jar"]
